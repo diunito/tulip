@@ -24,7 +24,7 @@
 
 from flask import Flask, Response, send_file
 
-from configurations import services, traffic_dir, start_date, tick_length
+from configurations import services, traffic_dir, start_date, tick_length, pswd
 from pathlib import Path
 from data2req import convert_flow_to_http_requests, convert_single_http_requests
 from base64 import b64decode
@@ -35,10 +35,22 @@ from flask import request
 
 from flow2pwn import flow2pwn
 
+# lib for basic auth
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.security import generate_password_hash, check_password_hash
+
 application = Flask(__name__)
 CORS(application)
 db = DB()
 
+# user and iniziliazation for basic auth
+users ={"tulip": generate_password_hash(pswd)}
+auth = HTTPBasicAuth()
+@auth.verify_password
+def verify_password(username, password):
+    if username in users and \
+            check_password_hash(users.get(username), password):
+        return username
 
 def return_json_response(object):
     return Response(json_util.dumps(object), mimetype='application/json')
@@ -48,10 +60,12 @@ def return_text_response(object):
 
 
 @application.route('/')
+@auth.login_required
 def hello_world():
     return 'Hello, World!'
 
 @application.route('/tick_info')
+@auth.login_required
 def getTickInfo():
     data = {
         "startDate": start_date,
@@ -60,39 +74,46 @@ def getTickInfo():
     return return_json_response(data)
 
 @application.route('/query', methods=['POST'])
+@auth.login_required
 def query():
     json = request.get_json()
     result = db.getFlowList(json)
     return return_json_response(result)
 
 @application.route('/tags')
+@auth.login_required
 def getTags():
     result = db.getTagList()
     return return_json_response(result)
 
 @application.route('/signature/<id>')
+@auth.login_required
 def signature(id):
     result = db.getSignature(int(id))
     return return_json_response(result)
 
 @application.route('/star/<flow_id>/<star_to_set>')
+@auth.login_required
 def setStar(flow_id, star_to_set):
     db.setStar(flow_id, star_to_set != "0")
     return "ok!"
 
 
 @application.route('/services')
+@auth.login_required
 def getServices():
     return return_json_response(services)
 
 
 @application.route('/flow/<id>')
+@auth.login_required
 def getFlowDetail(id):
     to_ret = return_json_response(db.getFlowDetail(id))
     return to_ret
 
 
 @application.route('/to_single_python_request', methods=['POST'])
+@auth.login_required
 def convertToSingleRequest():
     flow_id = request.args.get("id", "")
     if flow_id == "":
@@ -111,6 +132,7 @@ def convertToSingleRequest():
     return return_text_response(converted)
 
 @application.route('/to_python_request/<id>')
+@auth.login_required
 def convertToRequests(id):
     #TODO check flow null or what
     flow = db.getFlowDetail(id)
@@ -125,12 +147,14 @@ def convertToRequests(id):
     return return_text_response(converted)
 
 @application.route('/to_pwn/<id>')
+@auth.login_required
 def confertToPwn(id):
     flow = db.getFlowDetail(id)
     converted = flow2pwn(flow)
     return return_text_response(converted)
 
 @application.route('/download/')
+@auth.login_required
 def downloadFile():
     filepath = request.args.get('file')
     if filepath is None:
