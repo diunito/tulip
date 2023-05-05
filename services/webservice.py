@@ -40,6 +40,7 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 
 application = Flask(__name__)
+application.config['MAX_CONTENT_LENGTH'] = 1 * 1024 * 1024 * 1024
 CORS(application)
 db = DB()
 
@@ -170,6 +171,21 @@ def downloadFile():
         return send_file(filepath, as_attachment=True)
     except FileNotFoundError:
         return return_text_response("There was an error while downloading the requested file:\n{}: {}".format("Invalid 'file'", "'file' not found"))
+
+# API for uploading files
+# curl example: curl -F "file=@<path_to_file>" http://localhost:5000/upload -u tulip:<password>
+@application.route('/upload', methods=['POST'])
+@auth.login_required
+def uploadFile():
+    if 'file' not in request.files:
+        return return_text_response("There was an error while uploading the file:\n{}: {}".format("Invalid 'file'", "No 'file' given"))
+    file = request.files['file']
+    if file.filename == '':
+        return return_text_response("There was an error while uploading the file:\n{}: {}".format("Invalid 'file'", "No 'file' given"))
+    if file:
+        file.save(traffic_dir / file.filename)
+        return return_text_response("ok!")
+
 
 if __name__ == "__main__":
     application.run(host='0.0.0.0',threaded=True)
