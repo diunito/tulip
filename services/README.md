@@ -62,3 +62,6 @@ convert the request to python syntax. Tokenize is used to toggle the auto-parsin
 
 ##### GET /to_pwn/(id)
 Convert the flow with the specified id in pwntools syntax
+
+##### POST /update 
+Accepts a file via a post call, designed to work with the following curl command: *curl -F "file=/path/to/file" http://$ip:5000/upload -u "tulip:$password"*
