@@ -39,3 +39,5 @@ services = [{"ip": vm_ip, "port": 9876, "name": "cc_market"},
             {"ip": vm_ip, "port": 5000, "name": "starchaser"},
             {"ip": vm_ip, "port": 1883, "name": "scadnet_bin"},
             {"ip": vm_ip, "port": -1, "name": "other"}]
+# Added pswd for the basic auth
+pswd = os.getenv("TULIP_PSWD", "Tul1p")

@@ -3,3 +3,5 @@ pymongo
 Flask
 requests
 nilsimsa
+werkzeug
+flask_httpauth
