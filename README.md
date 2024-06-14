@@ -14,6 +14,8 @@ Tulip was developed by Team Europe for use in the first International Cyber Secu
 * Flow diffing
 * Time and size-based plots for correlation.
 * Linking HTTP sessions together based on cookies (Experimental, disabled by default)
+* Added a pcap update feature to the 'api' service
+* Implemented "Basic Auth" authentication system
 
 ## Screenshots
 ![](./demo_images/demo1.png)

@@ -2,3 +2,5 @@ Flask_Cors
 pymongo
 Flask
 requests
+werkzeug
+flask_httpauth

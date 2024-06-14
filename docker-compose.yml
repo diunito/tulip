@@ -29,13 +29,15 @@ services:
       context: services/api
       dockerfile: Dockerfile-api
     image: tulip-api:latest
+     ports:
+      - "5000:5000"
     restart: unless-stopped
     depends_on:
       - mongo
     networks:
       - internal
     volumes:
-      - ${TRAFFIC_DIR_HOST}:${TRAFFIC_DIR_DOCKER}:ro
+      - ${TRAFFIC_DIR_HOST}:${TRAFFIC_DIR_DOCKER}
     environment:
       TULIP_MONGO: ${TULIP_MONGO}
       TULIP_TRAFFIC_DIR: ${TRAFFIC_DIR_DOCKER}
