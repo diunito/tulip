@@ -29,7 +29,7 @@ services:
       context: services/api
       dockerfile: Dockerfile-api
     image: tulip-api:latest
-     ports:
+    ports:
       - "5000:5000"
     restart: unless-stopped
     depends_on:
