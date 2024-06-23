@@ -157,6 +157,12 @@ export function FlowList() {
       dispatch(toggleFilterTag("flag-out"))
     }
   }, [availableTags]);
+  useHotkeys('d', () => {
+    setShowFilters(true)
+    if ((availableTags ?? []).includes("custom-header")) {
+      dispatch(toggleFilterTag("custom-header"))
+    }
+  }, [availableTags]);
   useHotkeys('r', () => refetch());
 
   const [showFilters, setShowFilters] = useState(false);

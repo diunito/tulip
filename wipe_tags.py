@@ -17,5 +17,5 @@ pcap_coll = db.pcap
 
 pcap_coll.update_many(
     { },
-    { "$pull": { "tags": { "$nin": [ "flag-in", "flag-out" ] }} }
+    { "$pull": { "tags": { "$nin": [ "flag-in", "flag-out", "custom-header" ] }} }
 )
