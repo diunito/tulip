@@ -42,7 +42,6 @@ services:
       TULIP_MONGO: ${TULIP_MONGO}
       TULIP_TRAFFIC_DIR: ${TRAFFIC_DIR_DOCKER}
       FLAG_REGEX: ${FLAG_REGEX}
-      CUSTOM_HEADER_REGEX: ${CUSTOM_HEADER_REGEX}
       TICK_START: ${TICK_START}
       TICK_LENGTH: ${TICK_LENGTH}
       VM_IP: ${VM_IP}
@@ -84,6 +83,8 @@ services:
       FLAGID_SCAN: ${FLAGID_SCAN}
       FLAG_LIFETIME: ${FLAG_LIFETIME}
       PCAP_OVER_IP: ${PCAP_OVER_IP}
+      CUSTOM_HEADER_NAME: ${CUSTOM_HEADER_NAME}
+      CUSTOM_HEADER_VALUE: ${CUSTOM_HEADER_VALUE}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

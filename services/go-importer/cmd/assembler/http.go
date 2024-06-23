@@ -31,7 +31,7 @@ func AddFingerprints(cookies []*http.Cookie, fingerPrints map[uint32]bool) {
 // parsed are left as-is.
 //
 // If we manage to simplify a flow, the new data is placed in flowEntry.data
-func ParseHttpFlow(flow *db.FlowEntry) {
+func ParseHttpFlow(flow *db.FlowEntry, ch_name *string, ch_value *string) {
 	// Use a set to get rid of duplicates
 	fingerprintsSet := make(map[uint32]bool)
 
@@ -49,6 +49,13 @@ func ParseHttpFlow(flow *db.FlowEntry) {
 
 			if !contains(flow.Tags, "http") {
 				flow.Tags = append(flow.Tags, "http")
+			}
+
+			// Check if provided custom header is present
+			ch := req.Header.Get(*ch_name)
+			if !contains(flow.Tags, "custom-header") && ch == *ch_value {
+				// If it is present, add custom header tag
+				flow.Tags = append(flow.Tags, "custom-header")
 			}
 
 			if *experimental {

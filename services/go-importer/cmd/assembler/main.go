@@ -37,7 +37,8 @@ var promisc = true
 var watch_dir = flag.String("dir", "", "Directory to watch for new pcaps")
 var mongodb = flag.String("mongo", "", "MongoDB dns name + port (e.g. mongo:27017)")
 var flag_regex = flag.String("flag", "", "flag regex, used for flag in/out tagging")
-var custom_header_regex = flag.String("custom header", "", "custom header regex, used for tagging")
+var custom_header_name = flag.String("custom header name", "", "custom http header name, used for tagging")
+var custom_header_value = flag.String("custom header value", "", "custom http header value, used for tagging")
 var pcap_over_ip = flag.String("pcap-over-ip", "", "PCAP-over-IP host + port (e.g. remote:1337)")
 var bpf = flag.String("bpf", "", "BPF filter")
 var nonstrict = flag.Bool("nonstrict", false, "Do not check strict TCP / FSM flags")
@@ -74,12 +75,7 @@ var flagidUpdate int64 = 0
 // TODO; FIXME; RDJ; this is kinda gross, but this is PoC level code
 func reassemblyCallback(entry db.FlowEntry) {
 	// Parsing HTTP will decode encodings to a plaintext format
-	ParseHttpFlow(&entry)
-
-	// Apply custom header tag
-	if *custom_header_regex != "" {
-		ApplyCustomHeaderTags(&entry, custom_header_regex)
-	}
+	ParseHttpFlow(&entry, custom_header_name, custom_header_value)
 
 	// Apply flag in / flagout
 	if *flag_regex != "" {
@@ -219,12 +215,19 @@ func main() {
 		}
 	}
 
-	// If no custom header regex was supplied via cli, check the env
-	if *custom_header_regex == "" {
-		*custom_header_regex = os.Getenv("CUSTOM_HEADER_REGEX")
+	// If no custom header name/value was supplied via cli, check the env
+	if *custom_header_name == "" {
+		*custom_header_name = os.Getenv("CUSTOM_HEADER_NAME")
 		// if that didn't work, warn the user and continue
-		if *custom_header_regex == "" {
-			log.Print("WARNING; no custom header regex found. No custom header tags will be applied.")
+		if *custom_header_name == "" {
+			log.Print("WARNING; no custom header name found. No custom header tags will be applied.")
+		}
+	}
+	if *custom_header_value == "" {
+		*custom_header_value = os.Getenv("CUSTOM_HEADER_VALUE")
+		// if that didn't work, warn the user and continue
+		if *custom_header_value == "" {
+			log.Print("WARNING; no custom header value found. No custom header tags will be applied.")
 		}
 	}
 
