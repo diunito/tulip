@@ -10,14 +10,15 @@ import (
 )
 
 var flagRegex *regexp.Regexp
+var customHeaderRegex *regexp.Regexp
 
-func EnsureRegex(reg *string) {
-	if flagRegex == nil {
+func EnsureRegex(reg *string, regvar **regexp.Regexp) {
+	if *regvar == nil {
 		reg, err := regexp.Compile(*reg)
 		if err != nil {
-			log.Fatal("Failed to compile flag regex: ", err)
+			log.Fatal("Failed to compile regex: ", err)
 		} else {
-			flagRegex = reg
+			*regvar = reg
 		}
 	}
 }
@@ -36,7 +37,7 @@ func contains(s []string, e string) bool {
 // we can run regex tags over the payload directly
 // also add the matched flags to the FlowItem
 func ApplyFlagTags(flow *db.FlowEntry, reg *string) {
-	EnsureRegex(reg)
+	EnsureRegex(reg, &flagRegex)
 
 	// If the regex is not valid, bail here
 	if flagRegex == nil {
