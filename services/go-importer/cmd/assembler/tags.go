@@ -72,6 +72,38 @@ func ApplyFlagTags(flow *db.FlowEntry, reg *string) {
 	}
 }
 
+// Apply custom header tags to the entire flow.
+// This assumes the `Data` part of the flowItem is already pre-processed, s.t.
+// we can run regex tags over the payload directly
+func ApplyCustomHeaderTags(flow *db.FlowEntry, reg *string) {
+	EnsureRegex(reg, &customHeaderRegex)
+
+	// If the regex is not valid, bail here
+	if customHeaderRegex == nil {
+		return
+	}
+
+	for idx := 0; idx < len(flow.Flow); idx++ {
+		flowItem := &flow.Flow[idx]
+
+		// If flowItem is not from client, skip it
+		if flowItem.From != "c" {
+			continue
+		}
+
+		matches := customHeaderRegex.FindAllStringSubmatch(flowItem.Data, -1)
+		if len(matches) > 0 {
+			var tag string
+			tag = "custom-header"
+
+			// Add the tag if it doesn't already exist
+			if !contains(flow.Tags, tag) {
+				flow.Tags = append(flow.Tags, tag)
+			}
+		}
+	}
+}
+
 // Apply flagids to the entire flow.
 // This assumes the `Data` part of the flowItem is already pre-processed, s.t.
 func ApplyFlagids(flow *db.FlowEntry, flagidsDb []db.Flagid) {

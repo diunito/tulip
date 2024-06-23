@@ -38,6 +38,7 @@ var promisc = true
 var watch_dir = flag.String("dir", "", "Directory to watch for new pcaps")
 var mongodb = flag.String("mongo", "", "MongoDB dns name + port (e.g. mongo:27017)")
 var flag_regex = flag.String("flag", "", "flag regex, used for flag in/out tagging")
+var custom_header_regex = flag.String("custom header", "", "custom header regex, used for tagging")
 var pcap_over_ip = flag.String("pcap-over-ip", "", "PCAP-over-IP host + port (e.g. remote:1337)")
 var bpf = flag.String("bpf", "", "BPF filter")
 var nonstrict = flag.Bool("nonstrict", false, "Do not check strict TCP / FSM flags")
@@ -83,6 +84,11 @@ func reassemblyCallback(entry db.FlowEntry) {
 	}
 
 	fuzzyHash := nilsimsa.HexSum(allData)
+
+	// Apply custom header tag
+	if *custom_header_regex != "" {
+		ApplyCustomHeaderTags(&entry, custom_header_regex)
+	}
 
 	// Apply flag in / flagout
 	if *flag_regex != "" {
@@ -220,6 +226,15 @@ func main() {
 		// if that didn't work, warn the user and continue
 		if *flag_regex == "" {
 			log.Print("WARNING; no flag regex found. No flag-in or flag-out tags will be applied.")
+		}
+	}
+
+	// If no custom header regex was supplied via cli, check the env
+	if *custom_header_regex == "" {
+		*custom_header_regex = os.Getenv("CUSTOM_HEADER_REGEX")
+		// if that didn't work, warn the user and continue
+		if *custom_header_regex == "" {
+			log.Print("WARNING; no custom header regex found. No custom header tags will be applied.")
 		}
 	}
 
