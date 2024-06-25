@@ -15,7 +15,7 @@ services:
     image: tulip-frontend:latest
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${TULIP_PORT}:3000"
     depends_on:
       - mongo
       - api
