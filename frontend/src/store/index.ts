@@ -6,18 +6,20 @@ import type { TypedUseSelectorHook } from "react-redux";
 import { tulipApi } from "../api";
 
 import filterReducer from "./filter";
+import settingsSlice  from "./settings";
 
 export const store = configureStore({
   reducer: {
     [tulipApi.reducerPath]: tulipApi.reducer,
     filter: filterReducer,
+    settings: settingsSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(tulipApi.middleware),
 });
 
 setupListeners(store.dispatch);
-
+export type TulipRootState = ReturnType<typeof store.getState>
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch: () => typeof store.dispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<
