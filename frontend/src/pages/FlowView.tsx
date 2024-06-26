@@ -175,7 +175,7 @@ function Flow({ full_flow, flow, delta_time, id }: FlowProps) {
             onClick={async () => {
               window.open(
                 "https://gchq.github.io/CyberChef/#input=" +
-                  encodeURIComponent(flow.b64)
+                encodeURIComponent(flow.b64)
               );
             }}
           >
@@ -187,7 +187,7 @@ function Flow({ full_flow, flow, delta_time, id }: FlowProps) {
               onClick={async () => {
                 window.open(
                   "https://gchq.github.io/CyberChef/#input=" +
-                    encodeURIComponent(flowBody[1].toString("base64"))
+                  encodeURIComponent(flowBody[1].toString("base64"))
                 );
               }}
             >
@@ -372,7 +372,7 @@ function FlowOverview({ flow }: { flow: FullFlow }) {
           <div className="font-bold">
             [
             {flow.flagids.map((query, i) => (
-              <span>
+              <span key={`flagid-${i}`}>
                 {i > 0 ? ", " : ""}
                 <button
                   className="font-bold"
@@ -518,7 +518,7 @@ export function FlowView() {
         style={{ height: SECONDARY_NAVBAR_HEIGHT, zIndex: 20 }}
       >
         {flow?.child_id?.$oid != "000000000000000000000000" ||
-        flow?.parent_id?.$oid != "000000000000000000000000" ? (
+          flow?.parent_id?.$oid != "000000000000000000000000" ? (
           <div className="flex align-middle p-2 gap-3">
             <button
               className="bg-yellow-700 text-white px-2 text-sm rounded-md disabled:opacity-50"
@@ -577,7 +577,7 @@ export function FlowView() {
         </div>
       </div>
 
-      {flow ? <FlowOverview flow={flow}/>: undefined}
+      {flow ? <FlowOverview flow={flow} /> : undefined}
       {flow?.flow.map((flow_data, i, a) => {
         const delta_time = a[i].time - (a[i - 1]?.time ?? a[i].time);
         return (

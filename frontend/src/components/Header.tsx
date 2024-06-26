@@ -26,6 +26,8 @@ import {
 } from "../api";
 import { AdjustmentsIcon, CogIcon } from "@heroicons/react/solid";
 import { SettingsComponent } from "./Settings";
+import { useSelector } from "react-redux";
+import { TulipRootState } from "../store";
 
 function ServiceSelection() {
   const FILTER_KEY = SERVICE_FILTER_KEY;
@@ -363,6 +365,9 @@ export function Header() {
   let [searchParams] = useSearchParams();
   const { setToLastnTicks, currentTick, setTimeParam } = useMessyTimeStuff();
 
+  const hideDiff = useSelector((state: TulipRootState) => state.settings.hideDiff);
+  const hideCurr = useSelector((state: TulipRootState) => state.settings.hideCurrent);
+
   useHotkeys("a", () => setToLastnTicks(5));
   useHotkeys("c", () => {
     (document.getElementById("startdateselection") as HTMLInputElement).value =
@@ -407,18 +412,19 @@ export function Header() {
       </Link>
         <SimilaritySlider></SimilaritySlider>
       <div className="ml-auto mr-4" style={{ display: "flex" }}>
-        <div className="mr-4">
-          <FirstDiff />
-        </div>
-        <div className="mr-4">
-          <SecondDiff />
-        </div>
-        <div className="mr-6">
-          <Suspense>
-            <Diff />
-          </Suspense>
-        </div>
-        {/* <div
+        {!hideDiff && <>
+          <div className="mr-4">
+            <FirstDiff />
+          </div>
+          <div className="mr-4">
+            <SecondDiff />
+          </div>
+          <div className="mr-6">
+            <Suspense>
+              <Diff />
+            </Suspense>
+          </div></>}
+        {!hideCurr && <div
           className="ml-auto"
           style={{
             display: "flex",
@@ -428,8 +434,8 @@ export function Header() {
           }}
         >
           Current: {currentTick}
-        </div> */}
-        <SettingsComponent/>
+        </div>}
+        <SettingsComponent />
       </div>
     </>
   );
