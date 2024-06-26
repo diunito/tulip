@@ -33,12 +33,11 @@ flag_regex = os.getenv("FLAG_REGEX", "[A-Z0-9]{31}=")
 mongo_server = f'mongodb://{mongo_host}/'
 vm_ip = os.getenv("VM_IP", "10.10.3.1")
 
-services = [{"ip": vm_ip, "port": 5555, "name": "saas"},
-            {"ip": vm_ip, "port": 1234, "name": "notabook"},
-            {"ip": vm_ip, "port": 80, "name": "ctfe"},
-            {"ip": vm_ip, "port": 5006, "name": "ctfe2"},
-            {"ip": vm_ip, "port": 5005, "name": "ctfe1"},
-            {"ip": vm_ip, "port": 5000, "name": "weirdcpu"},
-]
+services = [{"ip": vm_ip, "port": 9876, "name": "cc_market"},
+            {"ip": vm_ip, "port": 80, "name": "maze"},
+            {"ip": vm_ip, "port": 8080, "name": "scadent"},
+            {"ip": vm_ip, "port": 5000, "name": "starchaser"},
+            {"ip": vm_ip, "port": 1883, "name": "scadnet_bin"},
+            {"ip": vm_ip, "port": -1, "name": "other"}]
 # Added pswd for the basic auth
 pswd = os.getenv("TULIP_PSWD", "Tul1p")
