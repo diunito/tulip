@@ -1,6 +1,6 @@
 import { format, parse } from "date-fns";
 import { Suspense, useState } from "react";
-import { useHotkeys } from 'react-hotkeys-hook';
+import { useHotkeys } from "react-hotkeys-hook";
 import {
   Link,
   useParams,
@@ -24,6 +24,10 @@ import {
   useGetServicesQuery,
   useGetTickInfoQuery,
 } from "../api";
+import { AdjustmentsIcon, CogIcon } from "@heroicons/react/solid";
+import { SettingsComponent } from "./Settings";
+import { useSelector } from "react-redux";
+import { TulipRootState } from "../store";
 
 function ServiceSelection() {
   const FILTER_KEY = SERVICE_FILTER_KEY;
@@ -68,11 +72,11 @@ function ServiceSelection() {
 function TextSearch() {
   const FILTER_KEY = TEXT_FILTER_KEY;
   let [searchParams, setSearchParams] = useSearchParams();
-  useHotkeys('s', (e) => {
-    let el = document.getElementById('search') as HTMLInputElement;
+  useHotkeys("s", (e) => {
+    let el = document.getElementById("search") as HTMLInputElement;
     el?.focus();
     el?.select();
-    e.preventDefault()
+    e.preventDefault();
   });
   return (
     <div>
@@ -310,7 +314,7 @@ function Diff() {
     <button
       className=" bg-amber-100 text-gray-800 rounded-md px-2 py-1"
       onClick={() => {
-        navigateToDiff()
+        navigateToDiff();
       }}
     >
       Diff
@@ -322,10 +326,15 @@ export function Header() {
   let [searchParams] = useSearchParams();
   const { setToLastnTicks, currentTick, setTimeParam } = useMessyTimeStuff();
 
-  useHotkeys('a', () => setToLastnTicks(5));
-  useHotkeys('c', () => {
-    (document.getElementById("startdateselection") as HTMLInputElement).value = "";
-    (document.getElementById("enddateselection") as HTMLInputElement).value = "";
+  const hideDiff = useSelector((state: TulipRootState) => state.settings.hideDiff);
+  const hideCurr = useSelector((state: TulipRootState) => state.settings.hideCurrent);
+
+  useHotkeys("a", () => setToLastnTicks(5));
+  useHotkeys("c", () => {
+    (document.getElementById("startdateselection") as HTMLInputElement).value =
+      "";
+    (document.getElementById("enddateselection") as HTMLInputElement).value =
+      "";
     setTimeParam("", START_FILTER_KEY);
     setTimeParam("", END_FILTER_KEY);
   });
@@ -363,18 +372,19 @@ export function Header() {
         </div>
       </Link>
       <div className="ml-auto mr-4" style={{ display: "flex" }}>
-        <div className="mr-4">
-          <FirstDiff />
-        </div>
-        <div className="mr-4">
-          <SecondDiff />
-        </div>
-        <div className="mr-6">
-          <Suspense>
-            <Diff />
-          </Suspense>
-        </div>
-        <div
+        {!hideDiff && <>
+          <div className="mr-4">
+            <FirstDiff />
+          </div>
+          <div className="mr-4">
+            <SecondDiff />
+          </div>
+          <div className="mr-6">
+            <Suspense>
+              <Diff />
+            </Suspense>
+          </div></>}
+        {!hideCurr && <div
           className="ml-auto"
           style={{
             display: "flex",
@@ -384,7 +394,8 @@ export function Header() {
           }}
         >
           Current: {currentTick}
-        </div>
+        </div>}
+        <SettingsComponent />
       </div>
     </>
   );

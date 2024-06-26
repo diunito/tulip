@@ -4,7 +4,7 @@ import {
   useParams,
   useNavigate,
 } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Flow } from "../types";
 import {
@@ -88,12 +88,16 @@ export function FlowList() {
 
   // TODO: fix the below transformation - move it to server
   // Diederik gives you a beer once it has been fixed
-  const transformedFlowData = flowData?.map((flow) => ({
-    ...flow,
-    service_tag:
-      services?.find((s) => s.ip === flow.dst_ip && s.port === flow.dst_port)
-        ?.name ?? "unknown",
-  }));
+  const transformedFlowData = useMemo(() => {
+    return flowData?.map((flow) => ({
+      ...flow,
+      service_tag:
+        services?.find((s) => s.ip === flow.dst_ip && s.port === flow.dst_port)
+          ?.name ?? "unknown",
+    }));
+  }, [flowData, services]);
+
+
 
   const onHeartHandler = async (flow: Flow) => {
     await starFlow({ id: flow._id.$oid, star: !flow.tags.includes("starred") });
@@ -102,48 +106,38 @@ export function FlowList() {
   const navigate = useNavigate();
 
   useEffect(() => {
-      virtuoso?.current?.scrollIntoView({
-        index: flowIndex,
-        behavior: 'auto',
-        done: () => {
-          if (transformedFlowData && transformedFlowData[flowIndex ?? 0]) {
-            let idAtIndex = transformedFlowData[flowIndex ?? 0]._id.$oid;
-            // if the current flow ID at the index indeed did change (ie because of keyboard navigation), we need to update the URL as well as local ID
-            if (idAtIndex !== openedFlowID) {
-              navigate(`/flow/${idAtIndex}?${searchParams}`)
-              openedFlowID = idAtIndex
-            }
+    virtuoso?.current?.scrollIntoView({
+      index: flowIndex,
+      behavior: 'auto',
+      done: () => {
+        if (transformedFlowData && transformedFlowData[flowIndex ?? 0]) {
+          let idAtIndex = transformedFlowData[flowIndex ?? 0]._id.$oid;
+          // if the current flow ID at the index indeed did change (ie because of keyboard navigation), we need to update the URL as well as local ID
+          if (idAtIndex !== openedFlowID) {
+            navigate(`/flow/${idAtIndex}?${searchParams}`)
+            openedFlowID = idAtIndex
           }
-        },
-      })
-    },
+        }
+      },
+    })
+  },
     [flowIndex]
   )
 
-  // TODO: there must be a better way to do this
-  // this gets called on every refetch, we dont want to iterate all flows on every refetch
-  // so because performance, we hack this by checking if the transformedFlowData length changed
-  const [transformedFlowDataLength, setTransformedFlowDataLength] = useState<number>(0);
-  useEffect(
-    () => {
-      if (transformedFlowData && transformedFlowDataLength != transformedFlowData?.length) {
-        setTransformedFlowDataLength(transformedFlowData?.length)
-
-        for (let i = 0; i < transformedFlowData?.length; i++) {
-          if (transformedFlowData[i]._id.$oid === openedFlowID) {
-            if (i !== flowIndex) {
-              setFlowIndex(i)
-            }
-            return
-          }
-        }
-        setFlowIndex(0)
+  
+  useEffect(() => {
+    if (transformedFlowData) {
+      const index = transformedFlowData.findIndex(flow => flow._id.$oid === openedFlowID);
+      if (index !== -1 && index !== flowIndex) {
+        setFlowIndex(index);
+      } else if (index === -1) {
+        setFlowIndex(0);
       }
-    },
-    [transformedFlowData]
-  )
+    }
+  }, [transformedFlowData, openedFlowID]);
 
-  useHotkeys('j', () => setFlowIndex(fi => Math.min((transformedFlowData?.length ?? 1)-1, fi + 1)), [transformedFlowData?.length]);
+  
+  useHotkeys('j', () => setFlowIndex(fi => Math.min((transformedFlowData?.length ?? 1) - 1, fi + 1)), [transformedFlowData?.length]);
   useHotkeys('k', () => setFlowIndex(fi => Math.max(0, fi - 1)));
   useHotkeys('i', () => {
     setShowFilters(true)
@@ -220,7 +214,7 @@ export function FlowList() {
             onClick={() => setFlowIndex(index)}
             key={flow._id.$oid}
             className="focus-visible:rounded-md"
-            //style={{ paddingTop: '1em' }}
+          //style={{ paddingTop: '1em' }}
           >
             <FlowListEntry
               key={flow._id.$oid}
@@ -277,7 +271,7 @@ function FlowListEntry({ flow, isActive, onHeartClick }: FlowListEntryProps) {
 
         <div className="w-5 mr-2 self-center shrink-0">
           {flow.child_id.$oid != "000000000000000000000000" ||
-          flow.parent_id.$oid != "000000000000000000000000" ? (
+            flow.parent_id.$oid != "000000000000000000000000" ? (
             <LinkIcon className="text-blue-500" />
           ) : undefined}
         </div>
