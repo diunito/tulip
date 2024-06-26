@@ -35,7 +35,7 @@ export interface Id {
 }
 
 export interface FlowData {
-  from: string;
+  from: "c" | "s";
   data: string;
   b64: string;
   time: number;
@@ -71,3 +71,8 @@ export type Service = {
   port: number;
   name: string;
 };
+
+
+export interface Settings{
+  newLayout: boolean
+}
