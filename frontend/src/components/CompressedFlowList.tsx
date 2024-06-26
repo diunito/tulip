@@ -15,7 +15,6 @@ function TextFlow({ flow }: { flow: FlowData }) {
   return <pre className={`inline leading-none	 ${flow.from == "s" ? "bg-green-200" : "bg-red-200"}`}>{fromBase64}</pre>;
 }
 
-
 export function CompressedFlowList() {
   let [searchParams, setSearchParams] = useSearchParams();
   const params = useParams();
@@ -33,7 +32,7 @@ export function CompressedFlowList() {
       {flow?.flow.map((flow_data, i, a) => {
         const delta_time = a[i].time - (a[i - 1]?.time ?? a[i].time);
         return (
-          <TextFlow flow={flow_data}></TextFlow>
+          <TextFlow flow={flow_data} key={i}></TextFlow>
         );
       })}
     </div>
