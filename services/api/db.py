@@ -99,6 +99,10 @@ class DB:
                 ret["signatures"].append(tmp)
         
         return ret
+    
+    def deleteFlow(self, id):
+      result = self.pcap_coll.delete_one({"_id": ObjectId(id)})
+      return result.deleted_count
 
     def setStar(self, flow_id, star):
         if star:

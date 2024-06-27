@@ -119,6 +119,13 @@ def getFlowDetail(id):
     return to_ret
 
 
+@application.route('/delete-flow/<id>')
+@auth.login_required
+def getDeleteFlow(id):
+    to_ret = return_json_response(db.deleteFlow(id))
+    return to_ret
+
+
 @application.route('/to_single_python_request', methods=['POST'])
 @auth.login_required
 def convertToSingleRequest():
