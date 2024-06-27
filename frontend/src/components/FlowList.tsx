@@ -4,9 +4,9 @@ import {
   useParams,
   useNavigate,
 } from "react-router-dom";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useDebugValue } from "react";
 import { useHotkeys } from 'react-hotkeys-hook';
-import { Flow } from "../types";
+import { Flow, Id } from "../types";
 import {
   SERVICE_FILTER_KEY,
   TEXT_FILTER_KEY,
@@ -17,7 +17,7 @@ import {
 import { useAppSelector, useAppDispatch } from "../store";
 import {toggleFilterFuzzyHashes, toggleFilterTag} from "../store/filter";
 
-import { HeartIcon, FilterIcon, LinkIcon } from "@heroicons/react/solid";
+import { HeartIcon, FilterIcon, LinkIcon, TrashIcon } from "@heroicons/react/solid";
 import { HeartIcon as EmptyHeartIcon } from "@heroicons/react/outline";
 
 import classes from "./FlowList.module.css";
@@ -27,11 +27,14 @@ import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import classNames from "classnames";
 import { Tag } from "./Tag";
 import {
+  useDeleteFlowQuery,
   useGetFlowsQuery,
   useGetServicesQuery,
   useGetTagsQuery,
+  useLazyDeleteFlowQuery,
   useStarFlowMutation,
 } from "../api";
+import { relative } from "path";
 
 export function FlowList() {
   let [searchParams] = useSearchParams();
@@ -90,15 +93,19 @@ export function FlowList() {
     }
   );
 
+  const [transformedFlowData, setTransformedFlowData] = useState<Flow[]>([]);
+
+
   // TODO: fix the below transformation - move it to server
   // Diederik gives you a beer once it has been fixed
-  const transformedFlowData = useMemo(() => {
-    return flowData?.map((flow) => ({
+  useMemo(() => {
+    const newTransformedFlowData = flowData?.map((flow) => ({
       ...flow,
       service_tag:
         services?.find((s) => s.ip === flow.dst_ip && s.port === flow.dst_port)
           ?.name ?? "unknown",
     }));
+    setTransformedFlowData(newTransformedFlowData ?? []);
   }, [flowData, services]);
 
 
@@ -128,7 +135,7 @@ export function FlowList() {
     [flowIndex]
   )
 
-  
+
   useEffect(() => {
     if (transformedFlowData) {
       const index = transformedFlowData.findIndex(flow => flow._id.$oid === openedFlowID);
@@ -140,7 +147,7 @@ export function FlowList() {
     }
   }, [transformedFlowData, openedFlowID]);
 
-  
+
   useHotkeys('j', () => setFlowIndex(fi => Math.min((transformedFlowData?.length ?? 1) - 1, fi + 1)), [transformedFlowData?.length]);
   useHotkeys('k', () => setFlowIndex(fi => Math.max(0, fi - 1)));
   useHotkeys('i', () => {
@@ -162,6 +169,16 @@ export function FlowList() {
     }
   }, [availableTags]);
   useHotkeys('r', () => refetch());
+
+  const handleDeleteFlow = (flowId: string) => {
+    if (transformedFlowData) {
+      const updatedFlowData = transformedFlowData.filter(
+        (flow) => flow._id.$oid !== flowId
+      );
+      // Aggiorna lo stato con i dati del flusso filtrati
+      setTransformedFlowData(updatedFlowData);
+    }
+  };
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -246,6 +263,7 @@ export function FlowList() {
               flow={flow}
               isActive={flow._id.$oid === openedFlowID}
               onHeartClick={onHeartHandler}
+              handleDeleteFlowFN={handleDeleteFlow}
             />
           </Link>
         )}
@@ -258,9 +276,34 @@ interface FlowListEntryProps {
   flow: Flow;
   isActive: boolean;
   onHeartClick: (flow: Flow) => void;
+  handleDeleteFlowFN: (id: string) => void;
 }
 
-function FlowListEntry({ flow, isActive, onHeartClick }: FlowListEntryProps) {
+function FlowListEntry({ flow, isActive, onHeartClick, handleDeleteFlowFN }: FlowListEntryProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
+  const [deleteFlow, { isLoading, isError, error }] = useLazyDeleteFlowQuery();
+
+  const handleDeleteFlow = async () => {
+    console.log(flow._id);
+
+    try {
+      await deleteFlow(flow._id.$oid).unwrap();
+      console.log("Flow deleted successfully");
+      handleDeleteFlowFN(flow._id.$oid)
+    } catch (error) {
+      console.error("Failed to delete flow:", error);
+    }
+  };
+
   const formatted_time_h_m_s = format(new Date(flow.time), "HH:mm:ss");
   const formatted_time_ms = format(new Date(flow.time), ".SSS");
 
@@ -290,8 +333,11 @@ function FlowListEntry({ flow, isActive, onHeartClick }: FlowListEntryProps) {
     <li
       className={classNames({
         [classes.active]: isActive,
+        relative: true
       })}
       style={{backgroundColor: `rgb(${color[0]} ${color[1]} ${color[2]} / var(--tw-bg-opacity))`}}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="flex">
         <div
@@ -335,6 +381,11 @@ function FlowListEntry({ flow, isActive, onHeartClick }: FlowListEntryProps) {
           </div>
         </div>
       </div>
+      {isHovered && (
+        <div className="flex absolute top-0 right-0 h-full bg-white p-2 rounded shadow transition-opacity duration-300 ease-in-out w-11">
+          <TrashIcon onClick={handleDeleteFlow}></TrashIcon>
+        </div>
+      )}
     </li>
   );
 }

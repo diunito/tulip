@@ -8,6 +8,7 @@ import {
   TickInfo,
   Flow,
   FlowsQuery,
+  Id,
 } from "./types";
 
 export const tulipApi = createApi({
@@ -16,6 +17,11 @@ export const tulipApi = createApi({
     getServices: builder.query<Service[], void>({
       query: () => "/services",
     }),
+
+    deleteFlow: builder.query<string, string>({
+      query: (id) => `/delete-flow/${id}`,
+    }),
+
     getFlagRegex: builder.query<string, void>({
       query: () => "/flag_regex",
     }),
@@ -107,6 +113,8 @@ export const tulipApi = createApi({
 
 export const {
   useGetServicesQuery,
+  useDeleteFlowQuery,
+  useLazyDeleteFlowQuery,
   useGetFlagRegexQuery,
   useGetFlowQuery,
   useGetFlowsQuery,
