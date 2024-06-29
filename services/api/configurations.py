@@ -24,6 +24,7 @@
 
 import os
 from pathlib import Path
+import json
 
 traffic_dir = Path(os.getenv("TULIP_TRAFFIC_DIR", "/traffic"))
 tick_length = os.getenv("TICK_LENGTH", 2*60*1000)
@@ -33,11 +34,11 @@ flag_regex = os.getenv("FLAG_REGEX", "[A-Z0-9]{31}=")
 mongo_server = f'mongodb://{mongo_host}/'
 vm_ip = os.getenv("VM_IP", "10.10.3.1")
 
-services = [{"ip": vm_ip, "port": 9876, "name": "cc_market"},
-            {"ip": vm_ip, "port": 80, "name": "maze"},
-            {"ip": vm_ip, "port": 8080, "name": "scadent"},
-            {"ip": vm_ip, "port": 5000, "name": "starchaser"},
-            {"ip": vm_ip, "port": 1883, "name": "scadnet_bin"},
-            {"ip": vm_ip, "port": -1, "name": "other"}]
+services_json = os.getenv("SERVICES_JSON", "[]")
+#print(services_json)
+servs = json.loads(services_json)
+services = [{"ip": vm_ip, "port": s["port"], "name": s["name"]} for s in servs]
+print(services)
+
 # Added pswd for the basic auth
 pswd = os.getenv("TULIP_PSWD", "Tul1p")

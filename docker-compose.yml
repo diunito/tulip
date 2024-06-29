@@ -46,6 +46,7 @@ services:
       TICK_LENGTH: ${TICK_LENGTH}
       VM_IP: ${VM_IP}
       TULIP_PSWD: ${TULIP_PSWD}
+      SERVICES_JSON: ${SERVICES_JSON}
 
   flagids:
     restart: on-failure
