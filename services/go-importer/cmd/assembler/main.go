@@ -86,11 +86,6 @@ func reassemblyCallback(entry db.FlowEntry) {
 
 	fuzzyHash := nilsimsa.HexSum(allData)
 
-	// Apply custom header tag
-	if *custom_header_regex != "" {
-		ApplyCustomHeaderTags(&entry, custom_header_regex)
-	}
-
 	// Apply flag in / flagout
 	if *flag_regex != "" {
 		ApplyFlagTags(&entry, flag_regex)
